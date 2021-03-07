@@ -364,7 +364,7 @@ def writeMetadata(config, drive):
                     while True:
                         response = drive.files().list(**params).execute()
                         for file in response["files"]:
-                            print(f"测试子文件夹 {file}")
+                            #print(f"测试子文件夹 {file}")
                             #tvshow.nfo
                             if file['name']=="tvshow.nfo":
                                 nfo_key=1
@@ -376,13 +376,12 @@ def writeMetadata(config, drive):
                             break
 
                     try:
-
                         #下载
                         if nfo_key==1:
                             print("本地nfo文件存在")
                             sys.stdout.flush()
                             request = drive.files().get_media(fileId=nfo_id)
-                            fh = io.BytesIO()
+                            fh = "tvshow.nfo"
                             downloader = googleapiclient.http.MediaIoBaseDownload(fh, request)
                             done = False
                             while done is False:
@@ -390,6 +389,7 @@ def writeMetadata(config, drive):
                                 print(status,done)
                                 sys.stdout.flush()
 
+                            os.system("ls")
                             (
                                 item["title"],
                                 item["posterPath"],
