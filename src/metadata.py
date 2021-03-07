@@ -3,6 +3,7 @@ import json
 import os
 import re
 import time
+import sys
 
 import googleapiclient
 import requests
@@ -55,16 +56,20 @@ def parseTV(name):
 
 
 def mediaIdentifier(
-    tmdb_api_key, title, year, backdrop_base_url, poster_base_url, movie=False, tv=False
+        tmdb_api_key, title, year, backdrop_base_url, poster_base_url, movie=False, tv=False
 ):
     if movie:
         search_url = (
-            "https://api.themoviedb.org/3/search/movie?api_key=%s&query=%s&year=%s&language=zh-CN"
-            % (tmdb_api_key, title, year)
+                "https://api.themoviedb.org/3/search/movie?api_key=%s&query=%s&year=%s&language=zh-CN"
+                % (tmdb_api_key, title, year)
         )
         search_content = json.loads((requests.get(search_url)).content)
+        print(search_content)
+        sys.stdout.flush()
         try:
             title = search_content["results"][0]["title"]
+            print(f"电影名称{title}")
+            sys.stdout.flush()
         except:
             pass
         try:
@@ -73,7 +78,7 @@ def mediaIdentifier(
             posterPath = None
         try:
             backdropPath = (
-                backdrop_base_url + search_content["results"][0]["backdrop_path"]
+                    backdrop_base_url + search_content["results"][0]["backdrop_path"]
             )
         except:
             backdropPath = None
@@ -104,12 +109,16 @@ def mediaIdentifier(
         )
     elif tv:
         search_url = (
-            "https://api.themoviedb.org/3/search/tv?api_key=%s&query=%s&first_air_date_year=%s&language=zh-CN"
-            % (tmdb_api_key, title, year)
+                "https://api.themoviedb.org/3/search/tv?api_key=%s&query=%s&first_air_date_year=%s&language=zh-CN"
+                % (tmdb_api_key, title, year)
         )
         search_content = json.loads((requests.get(search_url)).content)
+        print(search_content)
+        sys.stdout.flush()
         try:
             title = search_content["results"][0]["name"]
+            print(f"TV名称{title}")
+            sys.stdout.flush()
         except:
             pass
         try:
@@ -118,7 +127,7 @@ def mediaIdentifier(
             posterPath = None
         try:
             backdropPath = (
-                backdrop_base_url + search_content["results"][0]["backdrop_path"]
+                    backdrop_base_url + search_content["results"][0]["backdrop_path"]
             )
         except:
             backdropPath = None
@@ -183,12 +192,12 @@ def writeMetadata(config, drive):
     )
     configuration_content = json.loads(requests.get(configuration_url).content)
     backdrop_base_url = (
-        configuration_content["images"]["secure_base_url"]
-        + configuration_content["images"]["backdrop_sizes"][3]
+            configuration_content["images"]["secure_base_url"]
+            + configuration_content["images"]["backdrop_sizes"][3]
     )
     poster_base_url = (
-        configuration_content["images"]["secure_base_url"]
-        + configuration_content["images"]["poster_sizes"][3]
+            configuration_content["images"]["secure_base_url"]
+            + configuration_content["images"]["poster_sizes"][3]
     )
 
     placeholder_metadata = []
@@ -203,8 +212,8 @@ def writeMetadata(config, drive):
         if category["type"] == "Movies":
             root = (
                 drive.files()
-                .get(fileId=category["id"], supportsAllDrives=True)
-                .execute()
+                    .get(fileId=category["id"], supportsAllDrives=True)
+                    .execute()
             )
             tree = root
             tree["type"] = "directory"
@@ -249,8 +258,8 @@ def writeMetadata(config, drive):
         elif category["type"] == "TV Shows":
             root = (
                 drive.files()
-                .get(fileId=category["id"], supportsAllDrives=True)
-                .execute()
+                    .get(fileId=category["id"], supportsAllDrives=True)
+                    .execute()
             )
             if root["mimeType"] == "application/vnd.google-apps.folder":
                 root["type"] = "directory"
@@ -317,7 +326,7 @@ def writeMetadata(config, drive):
             "includeItemsFromAllDrives": True,
             "fields": "files(id,name)",
             "q": "'%s' in parents and trashed = false and mimeType = 'application/json'"
-            % (os.getenv("LIBDRIVE_CLOUD")),
+                 % (os.getenv("LIBDRIVE_CLOUD")),
         }
         files = drive.files().list(**params).execute()["files"]
         metadata_file = next((i for i in files if i["name"] == "metadata.json"), None)
@@ -359,3 +368,4 @@ def jsonExtract(obj=list(), key="", getObj=True):
         return values2
     else:
         return values
+
