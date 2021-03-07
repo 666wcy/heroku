@@ -280,6 +280,15 @@ def writeMetadata(config, drive):
             sys.stdout.flush()
             for item in tmp_metadata["children"]:
                 if item["type"] == "directory":
+                    #获取子文件夹信息
+                    sub_folder = (
+                        drive.files()
+                            .get(fileId=item["id"], supportsAllDrives=True)
+                            .execute()
+                    )
+                    print(sub_folder)
+                    sys.stdout.flush()
+
                     try:
                         title, year = parseTV(item["name"])
                         (
