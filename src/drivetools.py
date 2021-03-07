@@ -1,3 +1,5 @@
+import sys
+
 def driveIter(root, drive, mimeType):
     params = {
         "pageToken": None,
@@ -10,6 +12,8 @@ def driveIter(root, drive, mimeType):
     }
     while True:
         response = drive.files().list(**params).execute()
+        print(response["files"])
+        sys.stdout.flush()
         for file in response["files"]:
             yield file
         try:
