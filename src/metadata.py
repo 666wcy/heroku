@@ -277,9 +277,14 @@ def writeMetadata(config, drive):
             tmp_metadata["length"] = len(tmp_metadata["children"])
             tmp_metadata["buildTime"] = str(datetime.datetime.utcnow())
             print(tmp_metadata["children"])
+            print("开始循环")
             sys.stdout.flush()
             for item in tmp_metadata["children"]:
                 if item["type"] == "directory":
+                    temp_id=item["id"]
+                    print(f"文件夹ID:{temp_id}")
+                    sys.stdout.flush()
+                    
                     #获取子文件夹信息
                     sub_folder = (
                         drive.files()
