@@ -65,6 +65,7 @@ def read_nfo():
 
     #标题
     print(soup.title.string)
+    sys.stdout.flush()
     try:
         title=soup.title.string
     except:
@@ -72,6 +73,7 @@ def read_nfo():
 
     #简介
     print(soup.plot.string)
+    sys.stdout.flush()
     try:
         overview=soup.plot.string
     except:
@@ -79,6 +81,7 @@ def read_nfo():
 
     #横幅
     print(soup.thumb.string)
+    sys.stdout.flush()
     try:
         backdropPath=soup.thumb.string
     except:
@@ -86,6 +89,7 @@ def read_nfo():
 
     #海报
     print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
+    sys.stdout.flush()
     try:
         posterPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
     except:
@@ -93,6 +97,7 @@ def read_nfo():
 
     #年份
     print(soup.year.string)
+    sys.stdout.flush()
     try:
         releaseDate=soup.year.string
     except:
@@ -102,20 +107,13 @@ def read_nfo():
 
     #评分 voteAverage
     print(soup.rating.string)
+    sys.stdout.flush()
     try:
         voteAverage = soup.rating.string
     except:
         voteAverage = 0.0
 
-    return (
-        title,
-        posterPath,
-        backdropPath,
-        releaseDate,
-        overview,
-        popularity,
-        voteAverage,
-    )
+    return [title, posterPath, backdropPath, releaseDate,  overview, popularity,  voteAverage,]
 
 
 def mediaIdentifier(
@@ -387,33 +385,21 @@ def writeMetadata(config, drive):
                             done = False
                             while done is False:
                                 status, done = downloader.next_chunk()
-                            print(fh.getvalue())
-                            sys.stdout.flush()
                             with open("tvshow.nfo","w",encoding='utf-8') as f:
                                 f.write(fh.getvalue())
                                 f.close()
                             sys.stdout.flush()
 
+                            nfo_list=read_nfo()
+                           
+                            item["title"]=nfo_list[0]
+                            item["posterPath"]=nfo_list[1]
+                            item["backdropPath"]=nfo_list[2]
+                            item["releaseDate"]=nfo_list[3]
+                            item["overview"]=nfo_list[4]
+                            item["popularity"]=nfo_list[5]
+                            item["voteAverage"]=nfo_list[6]
 
-                            r = os.popen('ls').read()
-
-                            print(r)
-                            print("开始读取nfo")
-                            sys.stdout.flush()
-                            (
-                                item["title"],
-                                item["posterPath"],
-                                item["backdropPath"],
-                                item["releaseDate"],
-                                item["overview"],
-                                item["popularity"],
-                                item["voteAverage"],
-                            )=read_nfo()
-                            '''try:
-                                os.remove("tvshow.nfo")
-                            except Exception as e:
-                                print(f"tvshow {e}")
-                                sys.stdout.flush()'''
 
                         else:
                             title, year = parseTV(item["name"])
@@ -434,7 +420,9 @@ def writeMetadata(config, drive):
                                 False,
                                 True,
                             )
-                    except:
+                    except Exception as e:
+                        print(f"the {e}")
+                        sys.stdout.flush()
                         (
                             item["title"],
                             item["posterPath"],
