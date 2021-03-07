@@ -68,8 +68,6 @@ def mediaIdentifier(
         sys.stdout.flush()
         try:
             title = search_content["results"][0]["title"]
-            print(f"电影名称{title}")
-            sys.stdout.flush()
         except:
             pass
         try:
@@ -113,8 +111,6 @@ def mediaIdentifier(
                 % (tmdb_api_key, title, year)
         )
         search_content = json.loads((requests.get(search_url)).content)
-        print(search_content)
-        sys.stdout.flush()
         try:
             title = search_content["results"][0]["name"]
             print(f"TV名称{title}")
@@ -255,12 +251,17 @@ def writeMetadata(config, drive):
                         ) = (item["name"], None, None, "1900-01-01", None, 0.0, 0.0)
 
             placeholder_metadata.append(tmp_metadata)
+
+        #TV分类
         elif category["type"] == "TV Shows":
+            #获取文件夹信息
             root = (
                 drive.files()
                     .get(fileId=category["id"], supportsAllDrives=True)
                     .execute()
             )
+            print(root)
+            sys.stdout.flush()
             if root["mimeType"] == "application/vnd.google-apps.folder":
                 root["type"] = "directory"
                 root["children"] = []
@@ -275,6 +276,8 @@ def writeMetadata(config, drive):
             tmp_metadata["categoryInfo"] = category
             tmp_metadata["length"] = len(tmp_metadata["children"])
             tmp_metadata["buildTime"] = str(datetime.datetime.utcnow())
+            print(tmp_metadata["children"])
+            sys.stdout.flush()
             for item in tmp_metadata["children"]:
                 if item["type"] == "directory":
                     try:
