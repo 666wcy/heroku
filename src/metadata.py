@@ -59,7 +59,7 @@ def parseTV(name):
 def read_nfo():
     with open("tvshow.nfo", "r",encoding='utf-8') as f:  # 打开文件
         data = f.read()  # 读取文件
-        print(data)
+        #print(data)
         soup = BeautifulSoup(data, 'html.parser')
         f.close()
 
@@ -77,7 +77,7 @@ def read_nfo():
     try:
         overview=soup.plot.string
     except:
-        overview = None
+        overview = "None"
 
     #横幅
     print(soup.thumb.string)
@@ -85,15 +85,15 @@ def read_nfo():
     try:
         backdropPath=soup.thumb.string
     except:
-        backdropPath = None
+        backdropPath = "None"
 
     #海报
-    print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
+    #print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
     sys.stdout.flush()
     try:
-        posterPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
+        posterPath=soup.thumb.string
     except:
-        posterPath = None
+        posterPath = "None"
 
     #年份
     print(soup.year.string)
