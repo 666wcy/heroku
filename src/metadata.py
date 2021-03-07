@@ -3,8 +3,9 @@ import json
 import os
 import re
 import time
+import io
 import sys
-
+from bs4 import BeautifulSoup
 import googleapiclient
 import requests
 
@@ -53,6 +54,67 @@ def parseTV(name):
     else:
         return
     return match["title"], match["year"]
+
+
+def read_nfo():
+    with open("tvshow.nfo", "r",encoding='utf-8') as f:  # 打开文件
+        data = f.read()  # 读取文件
+        print(data)
+        soup = BeautifulSoup(data, 'html.parser')
+
+        #标题
+        print(soup.title.string)
+        try:
+            title=soup.title.string
+        except:
+            None
+
+        #简介
+        print(soup.plot.string)
+        try:
+            overview=soup.plot.string
+        except:
+            overview = None
+
+        #横幅
+        print(soup.thumb.string)
+        try:
+            backdropPath=soup.thumb.string
+        except:
+            backdropPath = None
+
+        #海报
+        print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
+        try:
+            posterPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
+        except:
+            posterPath = None
+
+        #年份
+        print(soup.year.string)
+        try:
+            releaseDate=soup.year.string
+        except:
+            releaseDate = "1970-01-01"
+
+        popularity = 0.0
+
+        #评分 voteAverage
+        print(soup.rating.string)
+        try:
+            voteAverage = soup.rating.string
+        except:
+            voteAverage = 0.0
+
+    return (
+        title,
+        posterPath,
+        backdropPath,
+        releaseDate,
+        overview,
+        popularity,
+        voteAverage,
+    )
 
 
 def mediaIdentifier(
@@ -182,6 +244,9 @@ def readMetadata(config):
     return metadata
 
 
+
+
+
 def writeMetadata(config, drive):
     configuration_url = "https://api.themoviedb.org/3/configuration?api_key=%s" % (
         config["tmdb_api_key"]
@@ -286,8 +351,7 @@ def writeMetadata(config, drive):
                     temp_id=item["id"]
                     print(f"文件夹ID:{temp_id}")
                     sys.stdout.flush()
-                #获取子文件夹信息
-
+                #获取子文件夹信息,获取列表
                     params = {
                         "pageToken": None,
                         "supportsAllDrives": True,
@@ -296,35 +360,70 @@ def writeMetadata(config, drive):
                              % (temp_id),
                         "orderBy": "name",
                     }
+                    nfo_key=0
                     while True:
                         response = drive.files().list(**params).execute()
                         for file in response["files"]:
                             print(f"测试子文件夹 {file}")
-                            sys.stdout.flush()
+                            #tvshow.nfo
+                            if file['name']=="tvshow.nfo":
+                                nfo_key=1
+                                nfo_id=file['id']
+
                         try:
                             params["pageToken"] = response["nextPageToken"]
                         except KeyError:
                             break
 
                     try:
-                        title, year = parseTV(item["name"])
-                        (
-                            item["title"],
-                            item["posterPath"],
-                            item["backdropPath"],
-                            item["releaseDate"],
-                            item["overview"],
-                            item["popularity"],
-                            item["voteAverage"],
-                        ) = mediaIdentifier(
-                            config["tmdb_api_key"],
-                            title,
-                            year,
-                            backdrop_base_url,
-                            poster_base_url,
-                            False,
-                            True,
-                        )
+
+                        #下载
+                        if nfo_key==1:
+                            print("本地nfo文件存在")
+                            sys.stdout.flush()
+                            request = drive.files().get_media(fileId=nfo_id)
+                            fh = io.BytesIO()
+                            downloader = googleapiclient.http.MediaIoBaseDownload(fh, request)
+                            done = False
+                            while done is False:
+                                status, done = downloader.next_chunk()
+                                print(status,done)
+                                sys.stdout.flush()
+
+                            (
+                                item["title"],
+                                item["posterPath"],
+                                item["backdropPath"],
+                                item["releaseDate"],
+                                item["overview"],
+                                item["popularity"],
+                                item["voteAverage"],
+                            )=read_nfo()
+                            try:
+                                os.remove("tvshow.nfo")
+                            except Exception as e:
+                                print(f"tvshow {e}")
+                                sys.stdout.flush()
+
+                        else:
+                            title, year = parseTV(item["name"])
+                            (
+                                item["title"],
+                                item["posterPath"],
+                                item["backdropPath"],
+                                item["releaseDate"],
+                                item["overview"],
+                                item["popularity"],
+                                item["voteAverage"],
+                            ) = mediaIdentifier(
+                                config["tmdb_api_key"],
+                                title,
+                                year,
+                                backdrop_base_url,
+                                poster_base_url,
+                                False,
+                                True,
+                            )
                     except:
                         (
                             item["title"],
