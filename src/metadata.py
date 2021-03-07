@@ -398,6 +398,7 @@ def writeMetadata(config, drive):
                             r = os.popen('ls').read()
 
                             print(r)
+                            print("开始读取nfo")
                             sys.stdout.flush()
                             (
                                 item["title"],
