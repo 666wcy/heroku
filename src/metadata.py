@@ -61,55 +61,51 @@ def read_nfo():
         data = f.read()  # 读取文件
         print(data)
         soup = BeautifulSoup(data, 'html.parser')
+        f.close()
 
-        #标题
-        print(soup.title.string)
-        sys.stdout.flush()
-        try:
-            title=soup.title.string
-        except:
-            None
+    #标题
+    print(soup.title.string)
+    try:
+        title=soup.title.string
+    except:
+        None
 
-        #简介
-        print(soup.plot.string)
-        sys.stdout.flush()
-        try:
-            overview=soup.plot.string
-        except:
-            overview = None
+    #简介
+    print(soup.plot.string)
+    try:
+        overview=soup.plot.string
+    except:
+        overview = None
 
-        #横幅
-        print(soup.thumb.string)
-        try:
-            backdropPath=soup.thumb.string
-        except:
-            backdropPath = None
+    #横幅
+    print(soup.thumb.string)
+    try:
+        backdropPath=soup.thumb.string
+    except:
+        backdropPath = None
 
-        #海报
-        print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
-        sys.stdout.flush()
-        try:
-            posterPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
-        except:
-            posterPath = None
+    #海报
+    print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
+    try:
+        posterPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
+    except:
+        posterPath = None
 
-        #年份
-        print(soup.year.string)
-        sys.stdout.flush()
-        try:
-            releaseDate=soup.year.string
-        except:
-            releaseDate = "1970-01-01"
+    #年份
+    print(soup.year.string)
+    try:
+        releaseDate=soup.year.string
+    except:
+        releaseDate = "1970-01-01"
 
-        popularity = 0.0
+    popularity = 0.0
 
-        #评分 voteAverage
-        print(soup.rating.string)
-        sys.stdout.flush()
-        try:
-            voteAverage = soup.rating.string
-        except:
-            voteAverage = 0.0
+    #评分 voteAverage
+    print(soup.rating.string)
+    try:
+        voteAverage = soup.rating.string
+    except:
+        voteAverage = 0.0
 
     return (
         title,
@@ -401,11 +397,14 @@ def writeMetadata(config, drive):
                                 if done:
                                     print ('Download Complete')
                                     sys.stdout.flush()
+                                    with open("tvshow.nfo","w",encoding='utf-8') as f:
+                                        f.write(fh.getvalue())
+                                        f.close()
                                     break
 
 
                             r = os.popen('ls').read()
-                            
+
                             print(r)
                             sys.stdout.flush()
                             (
@@ -417,11 +416,11 @@ def writeMetadata(config, drive):
                                 item["popularity"],
                                 item["voteAverage"],
                             )=read_nfo()
-                            try:
+                            '''try:
                                 os.remove("tvshow.nfo")
                             except Exception as e:
                                 print(f"tvshow {e}")
-                                sys.stdout.flush()
+                                sys.stdout.flush()'''
 
                         else:
                             title, year = parseTV(item["name"])
