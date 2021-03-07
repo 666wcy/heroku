@@ -386,12 +386,12 @@ def writeMetadata(config, drive):
                             while done is False:
                                 status, done = downloader.next_chunk()
                             with open("tvshow.nfo","w",encoding='utf-8') as f:
-                                f.write(fh.getvalue())
+                                f.write(str(fh.getvalue(),encoding = "utf-8"))
                                 f.close()
                             sys.stdout.flush()
 
                             nfo_list=read_nfo()
-                           
+
                             item["title"]=nfo_list[0]
                             item["posterPath"]=nfo_list[1]
                             item["backdropPath"]=nfo_list[2]
