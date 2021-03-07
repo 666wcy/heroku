@@ -64,6 +64,7 @@ def read_nfo():
 
         #标题
         print(soup.title.string)
+        sys.stdout.flush()
         try:
             title=soup.title.string
         except:
@@ -71,6 +72,7 @@ def read_nfo():
 
         #简介
         print(soup.plot.string)
+        sys.stdout.flush()
         try:
             overview=soup.plot.string
         except:
@@ -85,6 +87,7 @@ def read_nfo():
 
         #海报
         print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
+        sys.stdout.flush()
         try:
             posterPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
         except:
@@ -92,6 +95,7 @@ def read_nfo():
 
         #年份
         print(soup.year.string)
+        sys.stdout.flush()
         try:
             releaseDate=soup.year.string
         except:
@@ -101,6 +105,7 @@ def read_nfo():
 
         #评分 voteAverage
         print(soup.rating.string)
+        sys.stdout.flush()
         try:
             voteAverage = soup.rating.string
         except:
@@ -381,15 +386,28 @@ def writeMetadata(config, drive):
                             print("本地nfo文件存在")
                             sys.stdout.flush()
                             request = drive.files().get_media(fileId=nfo_id)
-                            fh = "tvshow.nfo"
+                            fh = io.BytesIO()
                             downloader = googleapiclient.http.MediaIoBaseDownload(fh, request)
-                            done = False
-                            while done is False:
-                                status, done = downloader.next_chunk()
-                                print(status,done)
-                                sys.stdout.flush()
+                            while True:
+                                try:
+                                    download_progress, done = downloader.next_chunk()
+                                except Exception as e:
+                                    print(f'An error occurred: {e}')
+                                    sys.stdout.flush()
+                                    break
+                                if download_progress:
+                                    print ('Download Progress: %d%%' % int(download_progress.progress() * 100))
+                                    sys.stdout.flush()
+                                if done:
+                                    print ('Download Complete')
+                                    sys.stdout.flush()
+                                    break
 
-                            os.system("ls")
+
+                            r = os.popen('ls').read()
+                            
+                            print(r)
+                            sys.stdout.flush()
                             (
                                 item["title"],
                                 item["posterPath"],
