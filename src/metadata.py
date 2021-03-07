@@ -286,24 +286,14 @@ def writeMetadata(config, drive):
                     temp_id=item["id"]
                     print(f"文件夹ID:{temp_id}")
                     sys.stdout.flush()
-
-
                 #获取子文件夹信息
-                    sub_folder = (
-                        drive.files()
-                            .get(fileId=item["id"], supportsAllDrives=True)
-                            .execute()
-                    )
-                    print(sub_folder)
-                    sys.stdout.flush()
 
                     params = {
                         "pageToken": None,
                         "supportsAllDrives": True,
                         "includeItemsFromAllDrives": True,
-                        "fields": "files(id,name,mimeType), incompleteSearch, nextPageToken",
                         "q": "'%s' in parents and trashed = false"
-                             % (root["id"]),
+                             % (temp_id),
                         "orderBy": "name",
                     }
                     while True:
