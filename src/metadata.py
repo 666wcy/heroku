@@ -56,7 +56,9 @@ def parseTV(name):
     return match["title"], match["year"]
 
 
-def read_nfo():
+
+
+def read_nfo_tv(): 
     with open("tvshow.nfo", "r",encoding='utf-8') as f:  # 打开文件
         data = f.read()  # 读取文件
         #print(data)
@@ -77,23 +79,23 @@ def read_nfo():
     try:
         overview=soup.plot.string
     except:
-        overview = "None"
+        overview = None
 
     #横幅
     print(soup.thumb.string)
     sys.stdout.flush()
     try:
-        backdropPath=soup.thumb.string
+        backdropPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
     except:
-        backdropPath = "None"
+        backdropPath = None
 
     #海报
     #print(soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string)
     sys.stdout.flush()
     try:
-        posterPath=soup.thumb.string
+        posterPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
     except:
-        posterPath = "None"
+        posterPath = None
 
     #年份
     print(soup.year.string)
@@ -363,19 +365,38 @@ def writeMetadata(config, drive):
                     while True:
                         response = drive.files().list(**params).execute()
                         for file in response["files"]:
-                            #print(f"测试子文件夹 {file}")
-                            #tvshow.nfo
                             if file['name']=="tvshow.nfo":
                                 nfo_key=1
                                 nfo_id=file['id']
-
-                        try:
-                            params["pageToken"] = response["nextPageToken"]
-                        except KeyError:
-                            break
+                                break
+                        else:
+                            try:
+                                params["pageToken"] = response["nextPageToken"]
+                            except KeyError:
+                                break
+                            continue
+                        break
 
                     try:
-                        #下载
+                        title, year = parseTV(item["name"])
+                        (
+                            item["title"],
+                            item["posterPath"],
+                            item["backdropPath"],
+                            item["releaseDate"],
+                            item["overview"],
+                            item["popularity"],
+                            item["voteAverage"],
+                        ) = mediaIdentifier(
+                            config["tmdb_api_key"],
+                            title,
+                            year,
+                            backdrop_base_url,
+                            poster_base_url,
+                            False,
+                            True,
+                        )
+                        #nfo模式
                         if nfo_key==1:
                             print("本地nfo文件存在")
                             sys.stdout.flush()
@@ -390,36 +411,23 @@ def writeMetadata(config, drive):
                                 f.close()
                             sys.stdout.flush()
 
-                            nfo_list=read_nfo()
+                            nfo_list=read_nfo_tv()
+                            if nfo_list[0]!=None:
+                                item["title"]=nfo_list[0]
+                            if nfo_list[1]!=None:   
+                                item["posterPath"]=nfo_list[1]
+                            if nfo_list[0]!=None:
+                                item["backdropPath"]=nfo_list[2]
+                            if nfo_list[0]!=None:
+                                item["releaseDate"]=nfo_list[3]
+                            if nfo_list[0]!=None:
+                                item["overview"]=nfo_list[4]
+                            if nfo_list[0]!=None:
+                                item["popularity"]=nfo_list[5]
+                            if nfo_list[0]!=None:
+                                item["voteAverage"]=nfo_list[6]
+                        
 
-                            item["title"]=nfo_list[0]
-                            item["posterPath"]=nfo_list[1]
-                            item["backdropPath"]=nfo_list[2]
-                            item["releaseDate"]=nfo_list[3]
-                            item["overview"]=nfo_list[4]
-                            item["popularity"]=nfo_list[5]
-                            item["voteAverage"]=nfo_list[6]
-
-
-                        else:
-                            title, year = parseTV(item["name"])
-                            (
-                                item["title"],
-                                item["posterPath"],
-                                item["backdropPath"],
-                                item["releaseDate"],
-                                item["overview"],
-                                item["popularity"],
-                                item["voteAverage"],
-                            ) = mediaIdentifier(
-                                config["tmdb_api_key"],
-                                title,
-                                year,
-                                backdrop_base_url,
-                                poster_base_url,
-                                False,
-                                True,
-                            )
                     except Exception as e:
                         print(f"the {e}")
                         sys.stdout.flush()
