@@ -266,6 +266,8 @@ def writeMetadata(config, drive):
                 root["type"] = "directory"
                 root["children"] = []
                 for item in src.drivetools.driveIter(root, drive, "video"):
+                    print(item)
+                    sys.stdout.flush()
                     if root["mimeType"] == "application/vnd.google-apps.folder":
                         item["type"] = "directory"
                         root["children"].append(item)
@@ -284,7 +286,7 @@ def writeMetadata(config, drive):
                     temp_id=item["id"]
                     print(f"文件夹ID:{temp_id}")
                     sys.stdout.flush()
-                    
+
                     #获取子文件夹信息
                     sub_folder = (
                         drive.files()
@@ -293,6 +295,9 @@ def writeMetadata(config, drive):
                     )
                     print(sub_folder)
                     sys.stdout.flush()
+                    
+
+
 
                     try:
                         title, year = parseTV(item["name"])
