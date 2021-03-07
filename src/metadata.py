@@ -384,23 +384,15 @@ def writeMetadata(config, drive):
                             request = drive.files().get_media(fileId=nfo_id)
                             fh = io.BytesIO()
                             downloader = googleapiclient.http.MediaIoBaseDownload(fh, request)
-                            while True:
-                                try:
-                                    download_progress, done = downloader.next_chunk()
-                                except Exception as e:
-                                    print(f'An error occurred: {e}')
-                                    sys.stdout.flush()
-                                    break
-                                if download_progress:
-                                    print ('Download Progress: %d%%' % int(download_progress.progress() * 100))
-                                    sys.stdout.flush()
-                                if done:
-                                    print ('Download Complete')
-                                    sys.stdout.flush()
-                                    with open("tvshow.nfo","w",encoding='utf-8') as f:
-                                        f.write(fh.getvalue())
-                                        f.close()
-                                    break
+                            done = False
+                            while done is False:
+                                status, done = downloader.next_chunk()
+                            print(fh.getvalue())
+                            sys.stdout.flush()
+                            with open("tvshow.nfo","w",encoding='utf-8') as f:
+                                f.write(fh.getvalue())
+                                f.close()
+                            sys.stdout.flush()
 
 
                             r = os.popen('ls').read()
