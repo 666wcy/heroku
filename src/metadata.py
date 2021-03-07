@@ -287,7 +287,8 @@ def writeMetadata(config, drive):
                     print(f"文件夹ID:{temp_id}")
                     sys.stdout.flush()
 
-                    #获取子文件夹信息
+
+                #获取子文件夹信息
                     sub_folder = (
                         drive.files()
                             .get(fileId=item["id"], supportsAllDrives=True)
@@ -295,9 +296,25 @@ def writeMetadata(config, drive):
                     )
                     print(sub_folder)
                     sys.stdout.flush()
-                    
 
-
+                    params = {
+                        "pageToken": None,
+                        "supportsAllDrives": True,
+                        "includeItemsFromAllDrives": True,
+                        "fields": "files(id,name,mimeType), incompleteSearch, nextPageToken",
+                        "q": "'%s' in parents and trashed = false"
+                             % (root["id"]),
+                        "orderBy": "name",
+                    }
+                    while True:
+                        response = drive.files().list(**params).execute()
+                        for file in response["files"]:
+                            print(f"测试子文件夹 {file}")
+                            sys.stdout.flush()
+                        try:
+                            params["pageToken"] = response["nextPageToken"]
+                        except KeyError:
+                            break
 
                     try:
                         title, year = parseTV(item["name"])
