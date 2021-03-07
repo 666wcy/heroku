@@ -58,7 +58,7 @@ def parseTV(name):
 
 
 
-def read_nfo_tv(): 
+def read_nfo_tv():
     with open("tvshow.nfo", "r",encoding='utf-8') as f:  # 打开文件
         data = f.read()  # 读取文件
         #print(data)
@@ -66,24 +66,21 @@ def read_nfo_tv():
         f.close()
 
     #标题
-    print(soup.title.string)
-    sys.stdout.flush()
+
     try:
         title=soup.title.string
     except:
         None
 
     #简介
-    print(soup.plot.string)
-    sys.stdout.flush()
+
     try:
         overview=soup.plot.string
     except:
         overview = None
 
     #横幅
-    print(soup.thumb.string)
-    sys.stdout.flush()
+
     try:
         backdropPath=soup.find_all(name='thumb',attrs={"aspect":"poster"})[0].string
     except:
@@ -98,8 +95,7 @@ def read_nfo_tv():
         posterPath = None
 
     #年份
-    print(soup.year.string)
-    sys.stdout.flush()
+
     try:
         releaseDate=soup.year.string
     except:
@@ -108,8 +104,7 @@ def read_nfo_tv():
     popularity = 0.0
 
     #评分 voteAverage
-    print(soup.rating.string)
-    sys.stdout.flush()
+
     try:
         voteAverage = soup.rating.string
     except:
@@ -414,7 +409,7 @@ def writeMetadata(config, drive):
                             nfo_list=read_nfo_tv()
                             if nfo_list[0]!=None:
                                 item["title"]=nfo_list[0]
-                            if nfo_list[1]!=None:   
+                            if nfo_list[1]!=None:
                                 item["posterPath"]=nfo_list[1]
                             if nfo_list[0]!=None:
                                 item["backdropPath"]=nfo_list[2]
@@ -426,7 +421,7 @@ def writeMetadata(config, drive):
                                 item["popularity"]=nfo_list[5]
                             if nfo_list[0]!=None:
                                 item["voteAverage"]=nfo_list[6]
-                        
+
 
                     except Exception as e:
                         print(f"the {e}")
